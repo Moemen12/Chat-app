@@ -36,3 +36,9 @@ export const registerUser = async ({
     // return NextResponse.json({ error: error.message }, { status: 500 });
   }
 };
+
+export const UpdateUser = async ({ username, profileImage }: UpdateUser) => {
+  await connectToDB();
+
+  const UpdatedUser = User.findByIdAndUpdate({});
+};

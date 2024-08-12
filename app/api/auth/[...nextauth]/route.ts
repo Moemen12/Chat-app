@@ -3,7 +3,7 @@ import User, { IUser } from "@/lib/mongodb/models/User"; // Assuming IUser is yo
 import { compare } from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth";
-import { User as NextAuthUser } from "next-auth"; // Importing NextAuth User type
+import { User as NextAuthUser, Session } from "next-auth";
 
 const handler = NextAuth({
   providers: [
@@ -24,7 +24,7 @@ const handler = NextAuth({
 
         await connectToDB();
 
-        const user = await User.findOne({ email: credentials.email }).lean(); // Using `lean()` to get a plain JS object
+        const user = await User.findOne({ email: credentials.email }).lean();
 
         if (!user || !user.password) {
           throw new Error("Invalid email or password");
@@ -47,6 +47,26 @@ const handler = NextAuth({
       },
     }),
   ],
+
+  callbacks: {
+    async session({ session }: { session: Session }) {
+      const mongodbUser = await User.findOne({
+        email: session.user?.email,
+      }).lean();
+
+      // console.log(mongodbUser);
+
+      if (mongodbUser) {
+        session.user = {
+          ...session.user,
+          ...mongodbUser,
+        };
+      }
+
+      return session;
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };

@@ -7,3 +7,8 @@ type RegisterParams = {
   email: string;
   password: string;
 };
+
+type UpdateUser = {
+  username: string;
+  profileImage: string;
+};

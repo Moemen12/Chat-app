@@ -50,7 +50,10 @@ const Form = ({ type }: LoginType) => {
 
         if (res?.error) {
           toast.error(res.error);
+          return null;
         }
+
+        router.push("/chats");
       } catch (error) {
         toast.error("Something went wrong");
       }
