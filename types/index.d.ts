@@ -10,5 +10,11 @@ type RegisterParams = {
 
 type UpdateUser = {
   username: string;
-  profileImage: string;
+  profileImage: File;
+};
+
+type FileUploaderProps = {
+  onFieldChange: (url: string) => void;
+  imageUrl?: string;
+  setFiles?: Dispatch<SetStateAction<File[]>>;
 };

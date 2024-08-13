@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import toast from "react-hot-toast";
 import logo from "@/public/assets/logo.png";
-import { ExtendedUser } from "@/types";
+import { ExtendedUser } from "@/types/interface";
 
 const TopBar: React.FC = () => {
   const pathname = usePathname();
@@ -28,7 +28,7 @@ const TopBar: React.FC = () => {
   return (
     <div className="topbar">
       <Link href={"/chats"}>
-        <Image src={logo} alt="logo" className="logo" />
+        <Image src={logo} alt="logo" className="logo" priority />
       </Link>
 
       <div className="menu">
