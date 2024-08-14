@@ -10,7 +10,8 @@ type RegisterParams = {
 
 type UpdateUser = {
   username: string;
-  profileImage: File;
+  profileImage: File | string;
+  id: string;
 };
 
 type FileUploaderProps = {

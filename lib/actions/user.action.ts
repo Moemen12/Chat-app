@@ -4,6 +4,16 @@ import User from "@/lib/mongodb/models/User";
 import * as bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { handleError } from "../utils";
+import { UTApi } from "uploadthing/server";
+
+const deleteFileFromUploadthing = async (fileUrl: string): Promise<boolean> => {
+  try {
+    await new UTApi().deleteFiles(fileUrl);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
 
 export const registerUser = async ({
   email,
@@ -37,8 +47,36 @@ export const registerUser = async ({
   }
 };
 
-export const UpdateUser = async ({ username, profileImage }: UpdateUser) => {
-  await connectToDB();
+export const updateUser = async ({
+  id,
+  username,
+  profileImage,
+}: UpdateUser) => {
+  try {
+    await connectToDB();
 
-  const UpdatedUser = User.findByIdAndUpdate({});
+    const existingUser = await User.findById(id)
+      .orFail(new Error("User Not Found"))
+      .exec();
+
+    existingUser.profileImage &&
+      (await deleteFileFromUploadthing(
+        existingUser.profileImage.split("https://utfs.io/f/")[1]
+      ));
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        username,
+        profileImage,
+      },
+      {
+        new: true,
+      }
+    );
+
+    return JSON.parse(JSON.stringify(updatedUser)); // Return the updated user object
+  } catch (error) {
+    handleError(error);
+  }
 };

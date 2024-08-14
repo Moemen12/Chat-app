@@ -1,6 +1,6 @@
 "use client";
 import { Person2Outlined } from "@mui/icons-material";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useUploadThing } from "@/lib/uploadthing";
@@ -8,11 +8,17 @@ import Loader from "@/components/shared/Loader";
 import { ExtendedUser } from "@/types/interface";
 import { convertFileToUrl } from "@/lib/utils";
 import person from "@/public/assets/person.jpg";
-import Image from "next/image"; // Import the Image component
+import Image from "next/image";
 import toast from "react-hot-toast";
+import { updateUser } from "@/lib/actions/user.action";
+
+type UpdateUser = {
+  username: string;
+  profileImage: File;
+};
 
 const Profile: React.FC = () => {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const user = session?.user as ExtendedUser;
 
   const [loading, setLoading] = useState(true);
@@ -35,7 +41,16 @@ const Profile: React.FC = () => {
     formState: { errors },
   } = useForm<UpdateUser>();
 
-  const { startUpload } = useUploadThing("imageUploader");
+  const { startUpload } = useUploadThing("imageUploader", {
+    onUploadError(e) {
+      if (e.message === "Invalid config: FileSizeMismatch") {
+        toast.error("Image size must be less than 2MB");
+      }
+      if (e.message === "Only JPEG and PNG images are allowed") {
+        toast.error("Only JPEG and PNG images are allowed");
+      }
+    },
+  });
 
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -53,22 +68,45 @@ const Profile: React.FC = () => {
     fileInputRef.current?.click();
   };
 
+  const updateProfileInBackend = async (username: string, imageUrl: string) => {
+    try {
+      const res = await updateUser({
+        id: user._id,
+        username,
+        profileImage: imageUrl,
+      });
+
+      toast.success("Profile updated successfully");
+
+      // Refresh the session after updating the profile
+      await update();
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to update profile");
+    }
+  };
+
   const onSubmit: SubmitHandler<UpdateUser> = async (data) => {
+    let imageUrl = user?.profileImage;
+
     if (file) {
       try {
         setIsUploading(true);
-        const url = await startUpload([file]);
+        const uploadResponse = await startUpload([file]);
 
-        if (!url) {
-          throw new Error("Upload failed: No URL returned.");
+        // if (!uploadResponse || !uploadResponse[0]?.url) {
+        //   throw new Error("Upload failed: No URL returned.");
+        // }
+
+        imageUrl = (uploadResponse && uploadResponse[0].url) || "";
+        setPreviewUrl(imageUrl);
+        if (imageUrl) {
+          updateProfileInBackend(data.username, imageUrl);
         }
-      } catch (error) {
-        toast.error("Upload failed");
       } finally {
         setIsUploading(false);
       }
     }
-    console.log("Form Data:", data);
   };
 
   return loading ? (
@@ -96,16 +134,15 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-center gap-4 flex-wrap">
-          {/* Use the Image component to display the preview */}
           <Image
             src={
               previewUrl ||
               (user?.profileImage ? user.profileImage : person.src)
             }
             alt="Profile Image"
-            width={160} // Adjust width
-            height={160} // Adjust height
-            className="rounded-full object-cover max-w-40 max-h-40"
+            width={160}
+            height={160}
+            className="rounded-full object-cover max-w-40 max-h-40 w-40 h-40"
             priority
           />
 

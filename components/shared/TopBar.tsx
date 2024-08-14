@@ -56,12 +56,14 @@ const TopBar: React.FC = () => {
           onClick={handleLogout}
         />
 
-        <Link href={"/profile"}>
+        <Link href={"/profile"} className="rounded-full w-10 h-10">
           <Image
             src={user?.profileImage || "/assets/person.jpg"}
             alt="profile photo"
             width={40}
             height={40}
+            className="size-full rounded-full object-cover"
+            priority
           />
         </Link>
       </div>
