@@ -28,3 +28,12 @@ type User = {
   profileImage?: string;
   __v: number;
 };
+
+type NewChatProps = {
+  _id?: string;
+  currentUserId: string;
+  members: string[];
+  isGroup: boolean;
+  name: string;
+  groupPhoto?: string;
+};

@@ -82,12 +82,21 @@ export const updateUser = async ({
   }
 };
 
-export const getAllUsers = async () => {
+export const getAllUsersOrSearchContacts = async (query: string) => {
   try {
     await connectToDB();
 
-    const allUsers = await User.find({}).exec();
-    return JSON.parse(JSON.stringify(allUsers)); // Return the list of users
+    const searchCondition = query
+      ? {
+          $or: [
+            { username: { $regex: query, $options: "i" } },
+            { email: { $regex: query, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const users = await User.find(searchCondition).exec();
+    return JSON.parse(JSON.stringify(users)); // Return the list of users or searched contacts
   } catch (error) {
     handleError(error);
     return []; // Return an empty array in case of an error
