@@ -19,3 +19,12 @@ type FileUploaderProps = {
   imageUrl?: string;
   setFiles?: Dispatch<SetStateAction<File[]>>;
 };
+
+type User = {
+  _id: string;
+  email: string;
+  username: string;
+  password: string;
+  profileImage?: string;
+  __v: number;
+};

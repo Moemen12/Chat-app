@@ -1,6 +1,6 @@
 "use client";
 import { Person2Outlined } from "@mui/icons-material";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useUploadThing } from "@/lib/uploadthing";
@@ -13,8 +13,9 @@ import toast from "react-hot-toast";
 import { updateUser } from "@/lib/actions/user.action";
 
 type UpdateUser = {
+  id: string;
   username: string;
-  profileImage: File;
+  profileImage?: string | File;
 };
 
 const Profile: React.FC = () => {
@@ -34,12 +35,7 @@ const Profile: React.FC = () => {
     setLoading(false);
   }, [user]);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<UpdateUser>();
+  const { register, handleSubmit, reset } = useForm<UpdateUser>();
 
   const { startUpload } = useUploadThing("imageUploader", {
     onUploadError(e) {
@@ -68,12 +64,18 @@ const Profile: React.FC = () => {
     fileInputRef.current?.click();
   };
 
-  const updateProfileInBackend = async (username: string, imageUrl: string) => {
+  const updateProfileInBackend = async (
+    username: string,
+    imageUrl?: string | null
+  ) => {
     try {
-      const res = await updateUser({
+      // If imageUrl is undefined or null, fall back to the user's existing profile image
+      const profileImage: string | File = imageUrl ?? user.profileImage ?? "";
+
+      await updateUser({
         id: user._id,
         username,
-        profileImage: imageUrl,
+        profileImage, // This ensures profileImage is either a string or a File
       });
 
       toast.success("Profile updated successfully");
@@ -81,32 +83,30 @@ const Profile: React.FC = () => {
       // Refresh the session after updating the profile
       await update();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error("Failed to update profile");
     }
   };
 
   const onSubmit: SubmitHandler<UpdateUser> = async (data) => {
-    let imageUrl = user?.profileImage;
+    let imageUrl: string | null = user?.profileImage || null; // Default to current profile image or null
 
     if (file) {
       try {
         setIsUploading(true);
         const uploadResponse = await startUpload([file]);
 
-        // if (!uploadResponse || !uploadResponse[0]?.url) {
-        //   throw new Error("Upload failed: No URL returned.");
-        // }
-
-        imageUrl = (uploadResponse && uploadResponse[0].url) || "";
-        setPreviewUrl(imageUrl);
-        if (imageUrl) {
-          updateProfileInBackend(data.username, imageUrl);
-        }
+        imageUrl =
+          uploadResponse && uploadResponse[0]?.url
+            ? uploadResponse[0].url
+            : null;
+        setPreviewUrl(imageUrl || previewUrl);
       } finally {
         setIsUploading(false);
       }
     }
+
+    await updateProfileInBackend(data.username, imageUrl);
   };
 
   return loading ? (
@@ -149,7 +149,7 @@ const Profile: React.FC = () => {
           <div onClick={handleDivClick} className="cursor-pointer">
             Upload new photo
             <input
-              {...register("profileImage", { max: 1 })}
+              {...register("profileImage")}
               className="hidden"
               id="file"
               type="file"

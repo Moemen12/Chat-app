@@ -59,16 +59,17 @@ export const updateUser = async ({
       .orFail(new Error("User Not Found"))
       .exec();
 
-    existingUser.profileImage &&
-      (await deleteFileFromUploadthing(
+    if (existingUser.profileImage && profileImage) {
+      await deleteFileFromUploadthing(
         existingUser.profileImage.split("https://utfs.io/f/")[1]
-      ));
+      );
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       id,
       {
         username,
-        profileImage,
+        profileImage: profileImage || existingUser.profileImage, // Keep existing profile image if no new image
       },
       {
         new: true,
@@ -78,5 +79,17 @@ export const updateUser = async ({
     return JSON.parse(JSON.stringify(updatedUser)); // Return the updated user object
   } catch (error) {
     handleError(error);
+  }
+};
+
+export const getAllUsers = async () => {
+  try {
+    await connectToDB();
+
+    const allUsers = await User.find({}).exec();
+    return JSON.parse(JSON.stringify(allUsers)); // Return the list of users
+  } catch (error) {
+    handleError(error);
+    return []; // Return an empty array in case of an error
   }
 };
