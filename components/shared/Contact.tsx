@@ -88,8 +88,8 @@ const Contact: React.FC = (): React.ReactElement => {
       if (chat) {
         router.push(`/chats/${chat._id}`);
       }
-    } catch (error) {
-      toast.error(error as string);
+    } catch (error: any) {
+      toast.error(error?.message);
     } finally {
       setSubmitLoading(false);
     }

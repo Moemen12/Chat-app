@@ -23,22 +23,25 @@ export const createChat = async ({
     let chat = await Chat.findOne(query);
 
     if (!chat) {
-      chat = new Chat(
+      chat = await Chat.create(
         isGroup ? query : { members: [currentUserId, ...members] }
       );
+      const updateAllMembers = chat.members.map(
+        async (memberId) =>
+          await User.findByIdAndUpdate(
+            memberId,
+            {
+              $addToSet: { chats: chat?._id },
+            },
+            {
+              new: true,
+            }
+          )
+      );
+      Promise.all(updateAllMembers);
+    } else {
+      throw new Error("You have already a chat with this user");
     }
-
-    await chat.save();
-
-    await User.findByIdAndUpdate(
-      currentUserId,
-      {
-        $addToSet: { chats: chat._id }, // Properly using $addToSet
-      },
-      {
-        new: true,
-      }
-    );
 
     return JSON.parse(JSON.stringify(chat));
   } catch (error) {

@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import logo from "@/public/assets/logo.png";
 import {
   EmailOutlined,
@@ -16,6 +16,7 @@ import { IUser } from "@/lib/mongodb/models/User";
 import { signIn } from "next-auth/react";
 
 const Form = ({ type }: LoginType) => {
+  const [loading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -30,19 +31,26 @@ const Form = ({ type }: LoginType) => {
     password,
   }: RegisterParams) => {
     if (type === "register") {
+      setIsLoading(true);
+
       await registerUser({ email, password, username })
         .then((res: IUser) => {
           router.push("/");
           return null;
         })
         .catch((error) => {
+          setIsLoading(false);
           toast.error(error.message);
           return error;
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
 
     if (type === "login") {
       try {
+        setIsLoading(true);
         const res = await signIn("credentials", {
           ...{ email, password },
           redirect: false,
@@ -55,7 +63,10 @@ const Form = ({ type }: LoginType) => {
 
         router.push("/chats");
       } catch (error) {
+        setIsLoading(false);
         toast.error("Something went wrong");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -140,8 +151,14 @@ const Form = ({ type }: LoginType) => {
               <p className="text-red-500">{errors.password.message}</p>
             )}
           </div>
-          <button className="button" type="submit">
-            {type === "register" ? "Join Free" : "Let's Chat"}
+          <button className="button" type="submit" disabled={loading}>
+            {type === "register"
+              ? loading
+                ? "Signing up..."
+                : "Join Free"
+              : loading
+              ? "Logging..."
+              : "Let's Chat"}
           </button>
         </form>
 
