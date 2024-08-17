@@ -37,3 +37,25 @@ type NewChatProps = {
   name: string;
   groupPhoto?: string;
 };
+
+type Chat = {
+  _id: string;
+  chats: string[];
+  email: string;
+  password: string;
+  profileImage: string;
+  username: string;
+  __v: number;
+};
+
+type UserChats = {
+  _id: string;
+  createdAt: string;
+  groupPhoto: string;
+  isGroup: boolean;
+  lastMessageAt: string;
+  members: Chat[];
+  messages: string[];
+  name: string;
+  _v: number;
+};

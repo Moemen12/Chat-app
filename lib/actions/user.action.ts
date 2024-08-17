@@ -5,6 +5,7 @@ import * as bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { handleError } from "../utils";
 import { UTApi } from "uploadthing/server";
+import Chat from "../mongodb/models/Chat";
 
 const deleteFileFromUploadthing = async (fileUrl: string): Promise<boolean> => {
   try {
@@ -100,5 +101,23 @@ export const getAllUsersOrSearchContacts = async (query: string) => {
   } catch (error) {
     handleError(error);
     return []; // Return an empty array in case of an error
+  }
+};
+
+export const getAllChats = async (id: string) => {
+  try {
+    await connectToDB();
+
+    const allChats = await Chat.find({ members: id })
+      .sort({ lastMessageAt: -1 })
+      .populate({
+        path: "members",
+        model: User,
+      })
+      .exec();
+
+    return JSON.parse(JSON.stringify(allChats));
+  } catch (error) {
+    handleError(error);
   }
 };
