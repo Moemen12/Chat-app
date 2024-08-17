@@ -38,7 +38,6 @@ const ChatList = () => {
           <ChatBox
             chat={chat}
             key={chat._id}
-            index={chat._id}
             currentUser={currentUser}
           />
         ))}
