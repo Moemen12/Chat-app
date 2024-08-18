@@ -1,44 +1,61 @@
 "use client";
-import { getAllChats } from "@/lib/actions/user.action";
+
 import { ExtendedUser } from "@/types/interface";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Loader from "./Loader";
 import ChatBox from "./ChatBox";
+import toast from "react-hot-toast";
+import { getAllChats } from "@/lib/actions/chat.action";
+import debounce from "debounce";
 
-const ChatList = () => {
-  const [loading, setLoading] = useState(true);
-  const [chats, setChats] = useState([]);
+const ChatList = ({ currentChatId }: { currentChatId: string | string[] }) => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [chats, setChats] = useState<UserChats[]>([]);
   const { data: session } = useSession();
+  const [search, setSearch] = useState<string>("");
 
   const currentUser = session?.user as ExtendedUser;
 
-  const getChats = async () => {
+  const getChats = async (query: string) => {
     try {
-      const res = await getAllChats(currentUser._id);
-
+      const res = await getAllChats({ id: currentUser._id, query });
       setChats(res);
       setLoading(false);
-    } catch (error) {}
+    } catch (error) {
+      toast.error("Failed to Load Chats");
+      console.log(error);
+    }
   };
+
+  // Use useCallback to prevent unnecessary re-creations of the debounced function
+  const debouncedFetchContacts = useCallback(debounce(getChats, 300), [
+    currentUser,
+  ]);
 
   useEffect(() => {
     if (currentUser) {
-      getChats();
+      debouncedFetchContacts(search);
     }
-  }, [currentUser]);
+  }, [currentUser, search, debouncedFetchContacts]);
+
   return loading ? (
     <Loader />
   ) : (
     <div className="chat-list">
-      <input placeholder="Search chat..." className="input-search" />
+      <input
+        placeholder="Search chat..."
+        className="input-search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
       <div className="chats">
         {chats.map((chat: UserChats) => (
           <ChatBox
             chat={chat}
             key={chat._id}
-            index={chat._id}
+            currentChatId={currentChatId}
             currentUser={currentUser}
           />
         ))}

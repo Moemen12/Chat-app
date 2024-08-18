@@ -5,13 +5,16 @@ import person from "@/public/assets/person.jpg";
 import { ExtendedUser } from "@/types/interface";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 const ChatBox = ({
   chat,
   currentUser,
+  currentChatId,
 }: {
   chat: UserChats;
   currentUser: ExtendedUser;
+  currentChatId: string;
 }) => {
   const router = useRouter();
   const otherMembers = chat.members.filter(
@@ -21,7 +24,10 @@ const ChatBox = ({
   const lastMessage =
     chat.messages.length > 0 && chat.messages[chat.messages.length - 1];
   return (
-    <div className="chat-box" onClick={() => router.push(`/chats/${chat._id}`)}>
+    <div
+      className={clsx("chat-box", { "bg-blue-2": chat._id === currentChatId })}
+      onClick={() => router.push(`/chats/${chat._id}`)}
+    >
       <div className="chat-info">
         {chat.isGroup ? (
           <Image

@@ -39,13 +39,13 @@ type NewChatProps = {
 };
 
 type Chat = {
-  _id: string;
   chats: string[];
   email: string;
   password: string;
   profileImage: string;
   username: string;
   __v: number;
+  _id: string;
 };
 
 type UserChats = {
@@ -55,7 +55,19 @@ type UserChats = {
   isGroup: boolean;
   lastMessageAt: string;
   members: Chat[];
-  messages: string[];
+  messages: any[];
   name: string;
   _v: number;
+};
+
+type ChatSearchProps = {
+  id: string;
+  query: string;
+};
+
+type MessageProps = {
+  chatId: string | string[];
+  currentUserId: string;
+  text?: string;
+  photo?: string;
 };

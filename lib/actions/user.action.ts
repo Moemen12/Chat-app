@@ -103,21 +103,3 @@ export const getAllUsersOrSearchContacts = async (query: string) => {
     return []; // Return an empty array in case of an error
   }
 };
-
-export const getAllChats = async (id: string) => {
-  try {
-    await connectToDB();
-
-    const allChats = await Chat.find({ members: id })
-      .sort({ lastMessageAt: -1 })
-      .populate({
-        path: "members",
-        model: User,
-      })
-      .exec();
-
-    return JSON.parse(JSON.stringify(allChats));
-  } catch (error) {
-    handleError(error);
-  }
-};
