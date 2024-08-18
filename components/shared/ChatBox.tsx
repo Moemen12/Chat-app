@@ -14,7 +14,7 @@ const ChatBox = ({
 }: {
   chat: UserChats;
   currentUser: ExtendedUser;
-  currentChatId: string;
+  currentChatId: string | string[];
 }) => {
   const router = useRouter();
   const otherMembers = chat.members.filter(
@@ -23,6 +23,13 @@ const ChatBox = ({
 
   const lastMessage =
     chat.messages.length > 0 && chat.messages[chat.messages.length - 1];
+
+  console.log(lastMessage);
+
+  // const seen = lastMessage?.seenBy?.find(
+  //   (member) => member._id === currentUser._id
+  // );
+
   return (
     <div
       className={clsx("chat-box", { "bg-blue-2": chat._id === currentChatId })}

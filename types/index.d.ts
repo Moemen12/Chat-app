@@ -55,7 +55,7 @@ type UserChats = {
   isGroup: boolean;
   lastMessageAt: string;
   members: Chat[];
-  messages: any[];
+  messages: Message[];
   name: string;
   _v: number;
 };
@@ -70,4 +70,27 @@ type MessageProps = {
   currentUserId: string;
   text?: string;
   photo?: string;
+};
+
+type Message = {
+  chat: string;
+  createdAt: string;
+  photo: string;
+  seenBy: Array<Record<string, unknown>>;
+  sender: {
+    chats: string[];
+    email: string;
+    password: string;
+    profileImage: string;
+    username: string;
+    __v: number;
+    _id: string;
+  };
+  text: string;
+  __v: number;
+  _id: string;
+};
+
+type Messages = {
+  messages: Message[];
 };

@@ -3,7 +3,7 @@
 import { getUserChat } from "@/lib/actions/chat.action";
 import { ExtendedUser } from "@/types/interface";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Loader from "./Loader";
 import Link from "next/link";
 import groupPhoto from "@/public/assets/group.png";
@@ -12,14 +12,29 @@ import send from "@/public/assets/send.jpg";
 import Image from "next/image";
 import { AddPhotoAlternate } from "@mui/icons-material";
 import { sendMessage } from "@/lib/actions/message";
+import { useUploadThing } from "@/lib/uploadthing";
+import toast from "react-hot-toast";
+import MessageBox from "./MessageBox";
 
 const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
   const [loading, setLoading] = useState(false);
   const [chat, setChat] = useState<UserChats | null>(null);
   const [otherMembers, setOtherMembers] = useState<Chat[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const { data: session } = useSession();
   const [text, setText] = useState<string>("");
   const currentUser = session?.user as ExtendedUser;
+
+  const { startUpload } = useUploadThing("sendChatImage", {
+    onUploadError(e) {
+      if (e.message === "Invalid config: FileSizeMismatch") {
+        toast.error("Image size must be less than 4MB");
+      }
+      if (e.message === "Only JPEG and PNG images are allowed") {
+        toast.error("Only JPEG and PNG images are allowed");
+      }
+    },
+  });
 
   const getChatDetails = async () => {
     try {
@@ -41,20 +56,54 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
     if (currentUser && chatId) getChatDetails();
   }, [currentUser, chatId]);
 
+  const [file, setFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const sendText = async () => {
     try {
+      let imageUrl: null | string = "";
+
+      // If there is an image file, start the upload process
+      if (file) {
+        const uploadResponse = await startUpload([file]);
+
+        // Extract the image URL from the upload response
+        imageUrl =
+          uploadResponse && uploadResponse[0]?.url
+            ? uploadResponse[0].url
+            : null;
+
+        // If the image upload fails, stop the function execution
+        if (!imageUrl) {
+          throw new Error("Image upload failed.");
+        }
+      }
+
+      // Send the message with or without the image URL
       const res = await sendMessage({
         chatId,
         currentUserId: currentUser._id,
         text,
+        photo: imageUrl || "",
       });
 
-      console.log(res);
-
       setText("");
+      setImageFile(null);
+      console.log(res);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+    }
+  };
+
+  const selectImage = () => {
+    fileInputRef.current?.click();
   };
 
   return loading ? (
@@ -96,10 +145,26 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
         )}
       </div>
 
-      <div className="chat-body"></div>
+      <div className="chat-body">
+        {chat?.messages.map((message: Message) => (
+          <MessageBox
+            key={message._id}
+            message={message}
+            currentUser={currentUser._id}
+          />
+        ))}
+      </div>
       <div className="send-message">
         <div className="prepare-message">
+          <input
+            type="file"
+            name="image"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
           <AddPhotoAlternate
+            onClick={selectImage}
             sx={{
               fontSize: "35px",
               color: "#737373",

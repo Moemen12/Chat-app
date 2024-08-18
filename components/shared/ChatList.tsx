@@ -50,15 +50,12 @@ const ChatList = ({ currentChatId }: { currentChatId: string | string[] }) => {
         onChange={(e) => setSearch(e.target.value)}
       />
 
-      <div className="chats">
+      <div className="chats gap-3">
         {chats.map((chat: UserChats) => (
           <ChatBox
+            currentChatId={currentChatId}
             chat={chat}
             key={chat._id}
-<<<<<<< HEAD
-            currentChatId={currentChatId}
-=======
->>>>>>> b66aad4c02e1af479562a3c374a08d4a6721aaad
             currentUser={currentUser}
           />
         ))}

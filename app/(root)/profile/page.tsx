@@ -37,7 +37,7 @@ const Profile: React.FC = () => {
 
   const { register, handleSubmit, reset } = useForm<UpdateUser>();
 
-  const { startUpload } = useUploadThing("imageUploader", {
+  const { startUpload } = useUploadThing("updateProfile", {
     onUploadError(e) {
       if (e.message === "Invalid config: FileSizeMismatch") {
         toast.error("Image size must be less than 2MB");

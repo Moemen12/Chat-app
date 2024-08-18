@@ -1,6 +1,7 @@
 "use server";
 import { connectToDB } from "../mongodb";
 import Chat from "../mongodb/models/Chat";
+import Message from "../mongodb/models/Message";
 import User from "../mongodb/models/User";
 import { handleError } from "../utils";
 
@@ -68,6 +69,14 @@ export const getAllChats = async ({ query, id }: ChatSearchProps) => {
           path: "members",
           model: User,
         })
+        .populate({
+          path: "messages",
+          model: Message,
+          populate: {
+            path: "sender seenBy",
+            model: User,
+          },
+        })
         .exec();
     } else {
       // Get all chats
@@ -90,10 +99,20 @@ export const getUserChat = async (chatId: string | string[]) => {
   try {
     await connectToDB();
 
-    const chat = await Chat.findById(chatId).populate({
-      path: "members",
-      model: User,
-    });
+    const chat = await Chat.findById(chatId)
+      .populate({
+        path: "members",
+        model: User,
+      })
+      .populate({
+        path: "messages",
+        model: Message,
+        populate: {
+          path: "sender seenBy",
+          model: User,
+        },
+      })
+      .exec();
     return JSON.parse(JSON.stringify(chat));
   } catch (error) {
     handleError(error);
