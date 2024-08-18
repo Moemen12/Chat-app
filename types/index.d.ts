@@ -51,6 +51,7 @@ type Chat = {
 type UserChats = {
   _id: string;
   createdAt: string;
+  photo: string;
   groupPhoto: string;
   isGroup: boolean;
   lastMessageAt: string;
@@ -74,7 +75,7 @@ type MessageProps = {
 
 type Message = {
   chat: string;
-  createdAt: string;
+  createdAt: string | Date;
   photo: string;
   seenBy: Array<Record<string, unknown>>;
   sender: {

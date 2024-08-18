@@ -45,7 +45,7 @@
 
 /* Main Container */
 .main-container {
-  @apply h-screen flex justify-between gap-5 px-10 py-3 max-lg:gap-8;
+  @apply h-screen flex justify-between gap-5 px-5 py-3 max-lg:gap-8;
 }
 
 /* Top Bar */

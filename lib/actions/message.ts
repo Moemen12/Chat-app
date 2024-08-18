@@ -46,7 +46,15 @@ export const sendMessage = async ({
       })
       .exec();
 
-    return JSON.parse(JSON.stringify(updatedChat));
+    // Populate the sender for the new message
+    await newMessage.populate("sender seenBy");
+
+    return JSON.parse(
+      JSON.stringify({
+        updatedChat,
+        newMessage,
+      })
+    );
   } catch (error) {
     handleError(error);
   }

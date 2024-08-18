@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { connectToDB } from "../mongodb";
 import Chat from "../mongodb/models/Chat";
 import Message from "../mongodb/models/Message";
@@ -85,6 +86,14 @@ export const getAllChats = async ({ query, id }: ChatSearchProps) => {
         .populate({
           path: "members",
           model: User,
+        })
+        .populate({
+          path: "messages",
+          model: Message,
+          populate: {
+            path: "sender seenBy",
+            model: User,
+          },
         })
         .exec();
     }

@@ -24,11 +24,11 @@ const ChatBox = ({
   const lastMessage =
     chat.messages.length > 0 && chat.messages[chat.messages.length - 1];
 
-  // console.log(lastMessage);
+  console.log(lastMessage);
 
-  // const seen = lastMessage?.seenBy?.find(
-  //   (member) => member._id === currentUser._id
-  // );
+  const seen =
+    lastMessage &&
+    lastMessage?.seenBy?.find((member) => member._id === currentUser._id);
 
   return (
     <div
@@ -56,19 +56,51 @@ const ChatBox = ({
 
         <div className="flex flex-col gap-1">
           {chat.isGroup ? (
-            <p className="text-base font-bold">{chat.name}</p>
+            <p className="text-medium">{chat.name}</p>
           ) : (
-            <p className="font-bold text-base">{otherMembers[0].username}</p>
+            <p className="text-medium">{otherMembers[0].username}</p>
           )}
           {!lastMessage && (
             <p className="text-small font-bold">Started a Chat</p>
+          )}
+
+          {lastMessage ? (
+            <>
+              {lastMessage?.photo ? (
+                lastMessage?.sender?._id === currentUser._id ? (
+                  <p className="text-small-medium text-grey-3">
+                    You sent a photo
+                  </p>
+                ) : (
+                  <p
+                    className={`${
+                      seen ? "text-small-medium text-grey-3" : "text-small-bold"
+                    }`}
+                  >
+                    Received a photo
+                  </p>
+                )
+              ) : (
+                <p
+                  className={`last-message ${
+                    seen ? "text-small-medium text-grey-3" : "text-small-bold"
+                  }`}
+                >
+                  {lastMessage?.text}
+                </p>
+              )}
+            </>
+          ) : (
+            <></>
           )}
         </div>
       </div>
 
       <div>
         <p className="text-base font-light text-grey-3">
-          {!lastMessage && format(new Date(chat.createdAt), "p")}
+          {!lastMessage
+            ? format(new Date(chat.createdAt), "p")
+            : format(new Date(chat.lastMessageAt), "p")}
         </p>
       </div>
     </div>

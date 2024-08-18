@@ -21,6 +21,7 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
   const [chat, setChat] = useState<UserChats | null>(null);
   const [otherMembers, setOtherMembers] = useState<Chat[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const { data: session } = useSession();
   const [text, setText] = useState<string>("");
   const currentUser = session?.user as ExtendedUser;
@@ -42,6 +43,7 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
       const data: UserChats = await getUserChat(chatId);
 
       setChat(data);
+      setMessages(data.messages);
       setOtherMembers(
         data.members.filter((member: Chat) => member._id !== currentUser._id)
       );
@@ -63,33 +65,42 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
     try {
       let imageUrl: null | string = "";
 
-      // If there is an image file, start the upload process
       if (file) {
         const uploadResponse = await startUpload([file]);
-
-        // Extract the image URL from the upload response
         imageUrl =
           uploadResponse && uploadResponse[0]?.url
             ? uploadResponse[0].url
             : null;
-
-        // If the image upload fails, stop the function execution
         if (!imageUrl) {
           throw new Error("Image upload failed.");
         }
       }
 
-      // Send the message with or without the image URL
-      const res = await sendMessage({
+      const messageData = {
         chatId,
         currentUserId: currentUser._id,
         text,
         photo: imageUrl || "",
-      });
+      };
+
+      const res = await sendMessage(messageData);
+
+      if (res && res.newMessage) {
+        // Ensure the sender is populated in the new message
+        const newMessageWithSender = {
+          ...res.newMessage,
+          sender: {
+            _id: currentUser._id,
+            username: currentUser.username,
+            profileImage: currentUser.profileImage,
+          },
+        };
+        setMessages((prevMessages) => [...prevMessages, newMessageWithSender]);
+        setChat(res.updatedChat);
+      }
 
       setText("");
-      setImageFile(null);
-      console.log(res);
+      setFile(null);
     } catch (error) {
       console.log(error);
     }
@@ -146,7 +157,7 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
       </div>
 
       <div className="chat-body">
-        {chat?.messages.map((message: Message) => (
+        {messages.map((message: Message) => (
           <MessageBox
             key={message._id}
             message={message}
@@ -158,6 +169,7 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
         <div className="prepare-message">
           <input
             type="file"
+            accept="image/jpeg,image/png"
             name="image"
             className="hidden"
             ref={fileInputRef}
@@ -182,7 +194,7 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
           />
         </div>
         <div onClick={sendText}>
-          <Image src={send} alt="send" className="send-icon" />
+          <Image src={send} alt="send" className="send-icon bg-cover" />
         </div>
       </div>
     </div>
