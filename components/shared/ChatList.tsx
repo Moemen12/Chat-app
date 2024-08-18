@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { getAllChats } from "@/lib/actions/chat.action";
 import debounce from "debounce";
 
-const ChatList = ({ currentChatId }: { currentChatId: string | string[] }) => {
+const ChatList = ({ currentChatId }: { currentChatId?: string | string[] }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [chats, setChats] = useState<UserChats[]>([]);
   const { data: session } = useSession();
@@ -53,7 +53,7 @@ const ChatList = ({ currentChatId }: { currentChatId: string | string[] }) => {
       <div className="chats gap-3">
         {chats.map((chat: UserChats) => (
           <ChatBox
-            currentChatId={currentChatId}
+            currentChatId={currentChatId!}
             chat={chat}
             key={chat._id}
             currentUser={currentUser}

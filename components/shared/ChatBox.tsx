@@ -24,7 +24,7 @@ const ChatBox = ({
   const lastMessage =
     chat.messages.length > 0 && chat.messages[chat.messages.length - 1];
 
-  console.log(lastMessage);
+  // console.log(lastMessage);
 
   // const seen = lastMessage?.seenBy?.find(
   //   (member) => member._id === currentUser._id
