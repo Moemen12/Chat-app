@@ -55,7 +55,10 @@ const ChatList = ({ currentChatId }: { currentChatId: string | string[] }) => {
           <ChatBox
             chat={chat}
             key={chat._id}
+<<<<<<< HEAD
             currentChatId={currentChatId}
+=======
+>>>>>>> b66aad4c02e1af479562a3c374a08d4a6721aaad
             currentUser={currentUser}
           />
         ))}
