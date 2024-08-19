@@ -55,43 +55,34 @@ const ChatBox = ({
         )}
 
         <div className="flex flex-col gap-1">
-          {chat.isGroup ? (
-            <p className="text-medium">{chat.name}</p>
+          {chat?.isGroup ? (
+            <p className="text-base-bold">{chat?.name}</p>
           ) : (
-            <p className="text-medium">{otherMembers[0].username}</p>
-          )}
-          {!lastMessage && (
-            <p className="text-small font-bold">Started a Chat</p>
+            <p className="text-base-bold">{otherMembers[0]?.username}</p>
           )}
 
-          {lastMessage ? (
-            <>
-              {lastMessage?.photo ? (
-                lastMessage?.sender?._id === currentUser._id ? (
-                  <p className="text-small-medium text-grey-3">
-                    You sent a photo
-                  </p>
-                ) : (
-                  <p
-                    className={`${
-                      seen ? "text-small-medium text-grey-3" : "text-small-bold"
-                    }`}
-                  >
-                    Received a photo
-                  </p>
-                )
-              ) : (
-                <p
-                  className={`last-message ${
-                    seen ? "text-small-medium text-grey-3" : "text-small-bold"
-                  }`}
-                >
-                  {lastMessage?.text}
-                </p>
-              )}
-            </>
+          {!lastMessage && <p className="text-small-bold">Started a chat</p>}
+
+          {lastMessage && lastMessage?.photo ? (
+            lastMessage?.sender?._id === currentUser._id ? (
+              <p className="text-small-medium text-grey-3">You sent a photo</p>
+            ) : (
+              <p
+                className={`${
+                  seen ? "text-small-medium text-grey-3" : "text-small-bold"
+                }`}
+              >
+                Received a photo
+              </p>
+            )
           ) : (
-            <></>
+            <p
+              className={`last-message ${
+                seen ? "text-small-medium text-grey-3" : "text-small-bold"
+              }`}
+            >
+              {lastMessage && lastMessage?.text}
+            </p>
           )}
         </div>
       </div>

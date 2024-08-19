@@ -8,6 +8,7 @@ import ChatBox from "./ChatBox";
 import toast from "react-hot-toast";
 import { getAllChats } from "@/lib/actions/chat.action";
 import debounce from "debounce";
+import { pusherClient } from "@/lib/pusher";
 
 const ChatList = ({ currentChatId }: { currentChatId?: string | string[] }) => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -38,6 +39,41 @@ const ChatList = ({ currentChatId }: { currentChatId?: string | string[] }) => {
       debouncedFetchContacts(search);
     }
   }, [currentUser, search, debouncedFetchContacts]);
+
+  useEffect(() => {
+    if (currentUser) {
+      pusherClient.subscribe(currentUser._id);
+
+      const handleChatUpdate = (updatedChat: any) => {
+        setChats((allChats) =>
+          allChats.map((chat) => {
+            if (chat._id === updatedChat.id) {
+              return {
+                ...chat,
+                messages: [...chat.messages, updatedChat.messages],
+                lastMessageAt: new Date().toISOString(),
+              };
+            } else {
+              return chat;
+            }
+          })
+        );
+      };
+
+      // const handleNewChat = (newChat) => {
+      //   setChats((allChats) => [...allChats, newChat]);
+      // }
+
+      pusherClient.bind("update-chat", handleChatUpdate);
+      // pusherClient.bind("new-chat", handleNewChat);
+
+      return () => {
+        pusherClient.unsubscribe(currentUser._id);
+        pusherClient.unbind("update-chat", handleChatUpdate);
+        // pusherClient.unbind("new-chat", handleNewChat);
+      };
+    }
+  }, [currentUser]);
 
   return loading ? (
     <Loader />

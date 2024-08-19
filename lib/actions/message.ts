@@ -3,6 +3,7 @@
 import { connectToDB } from "../mongodb";
 import Chat from "../mongodb/models/Chat";
 import Message from "../mongodb/models/Message";
+import { pusherServer } from "../pusher";
 import { handleError } from "../utils";
 
 export const sendMessage = async ({
@@ -48,6 +49,20 @@ export const sendMessage = async ({
 
     // Populate the sender for the new message
     await newMessage.populate("sender seenBy");
+
+    await pusherServer.trigger(chatId, "new-message", newMessage);
+
+    const lastMessage = updatedChat?.messages[updatedChat.messages.length - 1];
+    updatedChat?.members.forEach(async (member) => {
+      try {
+        await pusherServer.trigger(member._id.toString(), "update-chat", {
+          id: chatId,
+          messages: lastMessage,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    });
 
     return JSON.parse(
       JSON.stringify({

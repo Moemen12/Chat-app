@@ -15,13 +15,13 @@ import { sendMessage } from "@/lib/actions/message";
 import { useUploadThing } from "@/lib/uploadthing";
 import toast from "react-hot-toast";
 import MessageBox from "./MessageBox";
+import { pusherClient } from "@/lib/pusher";
 
 const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
   const [loading, setLoading] = useState(false);
   const [chat, setChat] = useState<UserChats | null>(null);
   const [otherMembers, setOtherMembers] = useState<Chat[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const { data: session } = useSession();
   const [text, setText] = useState<string>("");
   const currentUser = session?.user as ExtendedUser;
@@ -43,7 +43,6 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
       const data: UserChats = await getUserChat(chatId);
 
       setChat(data);
-      setMessages(data.messages);
       setOtherMembers(
         data.members.filter((member: Chat) => member._id !== currentUser._id)
       );
@@ -54,9 +53,37 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
     }
   };
 
+  const handleMessage = async (newMessage: any) => {
+    setChat((prevChat: any) => {
+      return {
+        ...prevChat,
+        messages: [...prevChat?.messages, newMessage],
+      };
+    });
+  };
+
   useEffect(() => {
     if (currentUser && chatId) getChatDetails();
   }, [currentUser, chatId]);
+
+  useEffect(() => {
+    pusherClient.subscribe(chatId as string);
+    pusherClient.bind("new-message", handleMessage);
+
+    return () => {
+      pusherClient.unsubscribe(chatId as string);
+      pusherClient.unbind("new-message", handleMessage);
+    };
+  }, [chatId]);
+
+  const bottomRef = useRef<null | HTMLDivElement>(null);
+  useEffect(() => {
+    bottomRef &&
+      bottomRef.current &&
+      bottomRef.current.scrollIntoView({
+        behavior: "smooth",
+      });
+  }, [chat?.messages]);
 
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -65,42 +92,33 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
     try {
       let imageUrl: null | string = "";
 
+      // If there is an image file, start the upload process
       if (file) {
         const uploadResponse = await startUpload([file]);
+
+        // Extract the image URL from the upload response
         imageUrl =
           uploadResponse && uploadResponse[0]?.url
             ? uploadResponse[0].url
             : null;
+
+        // If the image upload fails, stop the function execution
         if (!imageUrl) {
           throw new Error("Image upload failed.");
         }
       }
 
-      const messageData = {
+      // Send the message with or without the image URL
+      const res = await sendMessage({
         chatId,
         currentUserId: currentUser._id,
         text,
         photo: imageUrl || "",
-      };
-
-      const res = await sendMessage(messageData);
-
-      if (res && res.newMessage) {
-        // Ensure the sender is populated in the new message
-        const newMessageWithSender = {
-          ...res.newMessage,
-          sender: {
-            _id: currentUser._id,
-            username: currentUser.username,
-            profileImage: currentUser.profileImage,
-          },
-        };
-        setMessages((prevMessages) => [...prevMessages, newMessageWithSender]);
-        setChat(res.updatedChat);
-      }
+      });
 
       setText("");
-      setFile(null);
+      setImageFile(null);
+      console.log(res);
     } catch (error) {
       console.log(error);
     }
@@ -157,13 +175,14 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
       </div>
 
       <div className="chat-body">
-        {messages.map((message: Message) => (
+        {chat?.messages.map((message: Message) => (
           <MessageBox
             key={message._id}
             message={message}
             currentUser={currentUser._id}
           />
         ))}
+        <div ref={bottomRef}></div>
       </div>
       <div className="send-message">
         <div className="prepare-message">
