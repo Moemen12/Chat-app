@@ -95,3 +95,31 @@ type Message = {
 type Messages = {
   messages: Message[];
 };
+
+type UpdateGroupInfo = {
+  chatId: string | string[];
+  name: string;
+  groupPhoto: string | File;
+};
+
+type Member = {
+  _id: string;
+  username: string;
+  email: string;
+  password: string;
+  profileImage: string;
+  chats: string[];
+  __v: number;
+};
+
+type GroupInfoParams = {
+  _id: string;
+  createdAt: string; // or Date if you prefer
+  groupPhoto: string;
+  isGroup: boolean;
+  lastMessageAt: string; // or Date if you prefer
+  members: Member[];
+  messages: Message[];
+  name: string;
+  __v: number;
+};

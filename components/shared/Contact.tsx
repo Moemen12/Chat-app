@@ -105,7 +105,7 @@ const Contact: React.FC = (): React.ReactElement => {
       />
 
       <div className="contact-bar">
-        <div className="contact-list">
+        <div className="contact-list !mb-6">
           <p className="font-bold">Select or Deselect</p>
 
           {contacts.map((contact: User) => (
@@ -127,7 +127,9 @@ const Contact: React.FC = (): React.ReactElement => {
                 alt="profile"
                 className="profilePhoto"
               />
-              <p className="font-bold text-base">{contact.username}</p>
+              <p className="font-bold text-base line-clamp-3">
+                {contact.username}
+              </p>
             </div>
           ))}
         </div>
@@ -148,7 +150,7 @@ const Contact: React.FC = (): React.ReactElement => {
 
               <div className="flex flex-col gap-3">
                 <p className="font-bold">Members</p>
-                <div className="flex flex-wrap- gap-3">
+                <div className="flex flex-wrap gap-3">
                   {selectedContacts.map((contact: User) => (
                     <p className="selected-contact" key={contact._id}>
                       {contact.username}

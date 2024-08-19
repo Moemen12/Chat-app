@@ -3,18 +3,7 @@ import { connectToDB } from "@/lib/mongodb";
 import User from "@/lib/mongodb/models/User";
 import * as bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
-import { handleError } from "../utils";
-import { UTApi } from "uploadthing/server";
-import Chat from "../mongodb/models/Chat";
-
-const deleteFileFromUploadthing = async (fileUrl: string): Promise<boolean> => {
-  try {
-    await new UTApi().deleteFiles(fileUrl);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
+import { deleteFileFromUploadthing, handleError } from "../utils";
 
 export const registerUser = async ({
   email,

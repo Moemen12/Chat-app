@@ -96,7 +96,9 @@ const Form = ({ type }: LoginType) => {
                 <PersonOutline sx={{ color: "#737373" }} />
               </div>
               {errors.username && (
-                <p className="text-red-500">{errors.username.message}</p>
+                <p className="text-red-500 max-w-96">
+                  {errors.username.message}
+                </p>
               )}
             </div>
           )}
@@ -121,7 +123,7 @@ const Form = ({ type }: LoginType) => {
               <EmailOutlined sx={{ color: "#737373" }} />
             </div>
             {errors.email && (
-              <p className="text-red-500">{errors.email.message}</p>
+              <p className="text-red-500 max-w-96">{errors.email.message}</p>
             )}
           </div>
 
@@ -148,7 +150,7 @@ const Form = ({ type }: LoginType) => {
               <LockOutlined sx={{ color: "#737373" }} />
             </div>
             {errors.password && (
-              <p className="text-red-500">{errors.password.message}</p>
+              <p className="text-red-500 max-w-96">{errors.password.message}</p>
             )}
           </div>
           <button className="button" type="submit" disabled={loading}>

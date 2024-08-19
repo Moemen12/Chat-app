@@ -24,8 +24,6 @@ const ChatBox = ({
   const lastMessage =
     chat.messages.length > 0 && chat.messages[chat.messages.length - 1];
 
-  console.log(lastMessage);
-
   const seen =
     lastMessage &&
     lastMessage?.seenBy?.find((member) => member._id === currentUser._id);
@@ -35,12 +33,12 @@ const ChatBox = ({
       className={clsx("chat-box", { "bg-blue-2": chat._id === currentChatId })}
       onClick={() => router.push(`/chats/${chat._id}`)}
     >
-      <div className="chat-info">
+      <div className="chat-info items-center">
         {chat.isGroup ? (
           <Image
             src={chat.groupPhoto || groupPhoto}
             alt="group-photo"
-            className="w-11 h-11"
+            className="w-11 h-11 rounded-full"
             width={44}
             height={44}
           />

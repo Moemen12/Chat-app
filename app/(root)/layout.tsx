@@ -4,6 +4,7 @@ import "@/app/globals.css";
 import Provider from "@/components/shared/Provider";
 import TopBar from "@/components/shared/TopBar";
 import ToasterContext from "@/components/shared/ToasterContext";
+import BottomBar from "@/components/shared/BottomBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
           <ToasterContext />
           <TopBar />
           {children}
+          <BottomBar />
         </Provider>
       </body>
     </html>

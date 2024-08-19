@@ -1,3 +1,5 @@
+import { UTApi } from "uploadthing/server";
+
 export const handleError = (error: unknown) => {
   if (error instanceof Error) {
     // This is a native JavaScript error (e.g., TypeError, RangeError)
@@ -15,3 +17,14 @@ export const handleError = (error: unknown) => {
 };
 
 export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
+
+export const deleteFileFromUploadthing = async (
+  fileUrl: string
+): Promise<boolean> => {
+  try {
+    await new UTApi().deleteFiles(fileUrl);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
