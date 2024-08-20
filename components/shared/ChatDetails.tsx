@@ -16,9 +16,11 @@ import { useUploadThing } from "@/lib/uploadthing";
 import toast from "react-hot-toast";
 import MessageBox from "./MessageBox";
 import { pusherClient } from "@/lib/pusher";
+import clsx from "clsx";
 
 const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [sending, setSending] = useState<boolean>(false);
   const [chat, setChat] = useState<UserChats | null>(null);
   const [otherMembers, setOtherMembers] = useState<Chat[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -90,6 +92,7 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
 
   const sendText = async () => {
     try {
+      setSending(true);
       let imageUrl: null | string = "";
 
       // If there is an image file, start the upload process
@@ -120,7 +123,10 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
       setImageFile(null);
       console.log(res);
     } catch (error) {
+      setSending(false);
       console.log(error);
+    } finally {
+      setSending(true);
     }
   };
 
@@ -213,9 +219,13 @@ const ChatDetails = ({ chatId }: { chatId: string[] | string }) => {
               required
             />
           </div>
-          <div onClick={sendText}>
+          <button
+            disabled={sending}
+            className={clsx({ "cursor-wait": sending })}
+            onClick={sendText}
+          >
             <Image src={send} alt="send" className="send-icon bg-cover" />
-          </div>
+          </button>
         </div>
       </div>
     </div>
